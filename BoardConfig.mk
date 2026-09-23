@@ -7,8 +7,13 @@
 
 DEVICE_PATH := device/lava/LXX516
 
-# For building with minimal manifest
+# For building with minimal manifest broken things ;
 ALLOW_MISSING_DEPENDENCIES := true
+BUILD_BROKEN_DUP_RULES := true
+BUILD_BROKEN_ELF_PREBUILT_PRODUCT_COPY_FILES := true
+BUILD_BROKEN_PREBUILT_ELF_FILES := true
+BUILD_BROKEN_MISSING_REQUIRED_MODULES := true
+SOONG_ALLOW_MISSING_DEPENDENCIES := true
 
 # A/B
 AB_OTA_UPDATER := true
@@ -25,7 +30,6 @@ AB_OTA_PARTITIONS += \
     odm \
     vbmeta_vendor \
     boot
-BOARD_USES_RECOVERY_AS_BOOT := true
 
 # Architecture
 TARGET_ARCH := arm64
@@ -53,7 +57,8 @@ TARGET_NO_BOOTLOADER := true
 TARGET_SCREEN_DENSITY := 320
 TARGET_USES_VULKAN := true
 
-# Kernel
+# Kernel - some values may be different from your device, change them as per your device specifics. (idk why kernel base is 0x00000000)
+
 BOARD_BOOTIMG_HEADER_VERSION := 4
 BOARD_KERNEL_BASE := 0x00000000
 BOARD_KERNEL_CMDLINE := console=ttyS1,115200n8 bootconfig bootconfig
@@ -77,7 +82,13 @@ BOARD_MKBOOTIMG_ARGS += --dtb $(TARGET_PREBUILT_DTB)
 BOARD_INCLUDE_DTB_IN_BOOTIMG := 
 endif
 
-# Partitions
+# No Recovery image 
+TARGET_NO_RECOVERY := true
+
+# kernel - dtbo
+BOARD_KERNEL_SEPARATED_DTBO   := true
+
+# Partitions - match your original sizes with partion. 
 BOARD_FLASH_BLOCK_SIZE := 262144 # (BOARD_KERNEL_PAGESIZE * 64)
 BOARD_BOOTIMAGE_PARTITION_SIZE := 104857600
 BOARD_RECOVERYIMAGE_PARTITION_SIZE := 104857600
@@ -97,10 +108,24 @@ TARGET_BOARD_PLATFORM := ums9621
 # Recovery
 TARGET_RECOVERY_PIXEL_FORMAT := RGBX_8888
 TARGET_USERIMAGES_USE_EXT4 := true
+
+
+# DON'T REMOVE!;
+BOARD_MOVE_RECOVERY_RESOURCES_TO_VENDOR_BOOT := true
+BOARD_INCLUDE_RECOVERY_RAMDISK_IN_VENDOR_BOOT := true
+
+# match if your device uses vfat or f2fs (from fstab files)
 TARGET_USERIMAGES_USE_F2FS := true
 
-# Security patch level
-VENDOR_SECURITY_PATCH := 2021-08-01
+# SELinux Permissive (Debugging Only) (keep SELinux to permissive, so it won't break things)
+BOARD_BOOTCONFIG                               += androidboot.selinux=permissive
+BOARD_RECOVERY_SELINUX_PERMISSIVE              := true
+
+# Ramdisk use lz4
+BOARD_RAMDISK_USE_LZ4 := true
+
+# Security patch level - 2099 :)
+VENDOR_SECURITY_PATCH := 2099-08-01
 
 # Verified Boot
 BOARD_AVB_ENABLE := true
@@ -111,6 +136,10 @@ PLATFORM_SECURITY_PATCH := 2099-12-31
 VENDOR_SECURITY_PATCH := 2099-12-31
 PLATFORM_VERSION := 16.1.0
 
+# Power
+ENABLE_CPUSETS := true
+ENABLE_SCHEDBOOST := true
+
 # TWRP Configuration
 TW_THEME := portrait_hdpi
 TW_EXTRA_LANGUAGES := true
@@ -118,3 +147,19 @@ TW_SCREEN_BLANK_ON_BOOT := true
 TW_INPUT_BLACKLIST := "hbtp_vm"
 TW_USE_TOOLBOX := true
 TW_INCLUDE_REPACKTOOLS := true
+
+# Workaround for error copying files to recovery ramdisk
+TARGET_COPY_OUT_VENDOR := vendor
+TARGET_COPY_OUT_PRODUCT := product
+TARGET_COPY_OUT_VENDOR_DLKM := vendor_dlkm
+TARGET_COPY_OUT_ODM_DLKM := odm_dlkm
+
+# Haptics - you can work with them later. 
+TW_NO_HAPTICS := true
+
+# run Kernel module manually: if Recovery don't run them, add if necessary. default: comment out
+# TW_LOAD_VENDOR_MODULES :=
+
+# this is one of the critical files here, this must be perfect, first achieve a successful boot, then you can work with other things. Know if your device uses FBEv1 or FBEv2 (if you're planning to work on Decryption). till then; 
+
+# @IQ_HARRY_07

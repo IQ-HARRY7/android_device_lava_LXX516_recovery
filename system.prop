@@ -1,0 +1,1 @@
+# empty - idk. add your device specific things here, such as MTP,adb configuration. Decryption method such as: ro.crypto.volume.filenames_mode , fbe.metadata.wrappedkey ETC..
